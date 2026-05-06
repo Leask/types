@@ -1,12 +1,15 @@
 {
-  "name": "@telegraf/types",
+  "name": "@leask/types",
   "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "9.6.0",
   "description": "Type declarations for the Telegram API",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/telegraf/types.git"
+    "url": "git+https://github.com/Leask/types.git"
   },
   "keywords": [
     "telegram",
@@ -23,9 +26,9 @@
   "types": "index.d.ts",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/telegraf/types/issues"
+    "url": "https://github.com/Leask/types/issues"
   },
-  "homepage": "https://github.com/telegraf/types#readme",
+  "homepage": "https://github.com/Leask/types#readme",
   "files": [
     "*.d.ts",
     "index.js"
