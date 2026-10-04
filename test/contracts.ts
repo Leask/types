@@ -9,10 +9,12 @@ import type {
 	InputRichBlockDraft,
 	InputRichMessage,
 	InputRichMessageContent,
+	KeyboardButton,
 	Link,
 	LivePhoto,
 	Location,
 	PhotoSize,
+	Opts,
 	PollMedia,
 	RichMessageButton,
 	RichMessageButtonText,
@@ -25,6 +27,14 @@ import type {
 declare const chat: Chat;
 const personalChat: Extract<ChatFullInfo, { type: "private" }>["personal_chat"] = chat;
 void personalChat;
+
+// Plain reply buttons may be styled without opting into an action.
+const styledButton: KeyboardButton = {
+	text: "Continue",
+	style: "success",
+	icon_custom_emoji_id: "123",
+};
+void styledButton;
 
 const emoji: RichText.CustomEmoji = {
 	type: "custom_emoji",
@@ -197,3 +207,58 @@ files.editMessageText({
 	rich_message: { blocks: [{ type: "paragraph", text: "Updated" }] },
 });
 void inlineEdited;
+
+const uploadedBlock = {
+	blocks: [{ type: "photo", photo: { type: "photo", media: upload } }],
+} as const;
+const uploadedMedia = {
+	markdown: "![chart](tg://photo?id=chart)",
+	media: [{ id: "chart", media: { type: "photo", media: upload } }],
+} as const;
+const existingBlock = {
+	blocks: [{ type: "photo", photo: { type: "photo", media: "file-id" } }],
+} as const;
+const existingMedia = {
+	markdown: "![chart](tg://photo?id=chart)",
+	media: [{ id: "chart", media: { type: "photo", media: "file-id" } }],
+} as const;
+for (const rich_message of [uploadedBlock, uploadedMedia]) {
+	files.sendRichMessage({ chat_id: 1, rich_message });
+	files.editMessageText({ chat_id: 1, message_id: 2, rich_message });
+	const ephemeral: Opts<Upload>["editEphemeralMessageText"] = {
+		chat_id: 1,
+		receiver_user_id: 2,
+		ephemeral_message_id: 3,
+		rich_message,
+	};
+	files.editEphemeralMessageText(ephemeral);
+	// @ts-expect-error Inline edits cannot upload new files in blocks or media.
+	files.editMessageText({ inline_message_id: "inline", rich_message });
+	// @ts-expect-error Drafts cannot upload new files in blocks or media.
+	files.sendRichMessageDraft({ chat_id: 1, draft_id: 2, rich_message });
+	// @ts-expect-error Opts must preserve the inline upload restriction.
+	const inlineArgs: Opts<Upload>["editMessageText"] = { inline_message_id: "inline", rich_message };
+	// @ts-expect-error Opts must preserve the draft upload restriction.
+	const draftArgs: Opts<Upload>["sendRichMessageDraft"] = { chat_id: 1, draft_id: 2, rich_message };
+	void inlineArgs;
+	void draftArgs;
+}
+for (const rich_message of [existingBlock, existingMedia]) {
+	files.editMessageText({ inline_message_id: "inline", rich_message });
+	files.sendRichMessageDraft({ chat_id: 1, draft_id: 2, rich_message });
+}
+// @ts-expect-error Inline edits reject a block upload independently of media.
+files.editMessageText({ inline_message_id: "inline", rich_message: uploadedBlock });
+// @ts-expect-error Inline edits reject an explicit media upload independently of blocks.
+files.editMessageText({ inline_message_id: "inline", rich_message: uploadedMedia });
+// @ts-expect-error Drafts reject a block upload independently of media.
+files.sendRichMessageDraft({ chat_id: 1, draft_id: 2, rich_message: uploadedBlock });
+// @ts-expect-error Drafts reject an explicit media upload independently of blocks.
+files.sendRichMessageDraft({ chat_id: 1, draft_id: 2, rich_message: uploadedMedia });
+const nestedUpload = {
+	blocks: [{ type: "details", summary: "Details", blocks: uploadedBlock.blocks }],
+} as const;
+// @ts-expect-error Nesting must not bypass the inline upload restriction.
+files.editMessageText({ inline_message_id: "inline", rich_message: nestedUpload });
+// @ts-expect-error Nesting must not bypass the draft upload restriction.
+files.sendRichMessageDraft({ chat_id: 1, draft_id: 2, rich_message: nestedUpload });

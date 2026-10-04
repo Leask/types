@@ -6447,7 +6447,7 @@ interface MethodDeclarations<F> {
 	): Update.Edited &
 		(Message.TextMessage | Message.GameMessage | Message.RichMessageMessage) &
 		Message.BusinessSentMessage;
-	/** Use this method to edit inline text and game messages, or edit an inline message into a rich message combining formatted text, tables, media collages, buttons, and file attachments. On success, True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent. */
+	/** Use this method to edit inline text and game messages, or edit an inline message into a rich message. Direct uploads and explicit uploads by URL are not supported for inline edits. On success, True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent. */
 	editMessageText(
 		args: {
 			/** Unique identifier of the business connection on behalf of which the message to be edited was sent */
@@ -6477,7 +6477,7 @@ interface MethodDeclarations<F> {
 					/** Required if rich_message is not specified. New text of the message, 1-4096 characters after entities parsing */
 					text?: undefined;
 					/** Required if text is not specified. New content of the message formatted as a rich message */
-					rich_message: InputRichMessage<F>;
+					rich_message: InputRichMessage<never>;
 			  }
 		),
 	): true;
@@ -7150,7 +7150,7 @@ interface MethodDeclarations<F> {
 }
 
 interface MethodDeclarations<F> {
-	/** Use this method to stream a partial rich message to a user while the message is being generated; supported only for bots with forum topic mode enabled. Returns True on success. */
+	/** Use this method to stream a partial rich message to a user while the message is being generated. Drafts are temporary previews; use sendRichMessage to persist the completed message. Returns True on success. */
 	sendRichMessageDraft(args: {
 		/** Unique identifier for the target private chat */
 		chat_id: number;
@@ -7158,8 +7158,8 @@ interface MethodDeclarations<F> {
 		message_thread_id?: number;
 		/** Unique identifier of the message draft; must be non-zero. Changes of drafts with the same identifier are animated */
 		draft_id: number;
-		/** Content of the rich message draft */
-		rich_message: InputRichMessageDraft<F>;
+		/** Content of the rich message draft. Direct uploads and explicit uploads by URL are not supported. */
+		rich_message: InputRichMessageDraft<never>;
 		/** Pass True to allow the user to stop the generation of the draft */
 		can_stop?: boolean;
 		/** Pass True to keep the draft visible after its generation is stopped by the user */
