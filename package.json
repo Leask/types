@@ -31,6 +31,6 @@
     "index.js"
   ],
   "devDependencies": {
-    "deno-bin": "^2.1.6"
+    "deno": "2.2.7"
   }
 }
